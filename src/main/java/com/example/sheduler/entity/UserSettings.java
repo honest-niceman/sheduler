@@ -2,10 +2,10 @@ package com.example.sheduler.entity;
 
 public class UserSettings {
     String transparency;
-    String trigger;
+    Trigger trigger;
     String subGroup;
 
-    public UserSettings(String transparency, String trigger, String subGroup) {
+    public UserSettings(String transparency, Trigger trigger, String subGroup) {
         this.transparency = transparency;
         this.trigger = trigger;
         this.subGroup = subGroup;
@@ -19,11 +19,11 @@ public class UserSettings {
         this.transparency = transparency;
     }
 
-    public String getTrigger() {
+    public Trigger getTrigger() {
         return trigger;
     }
 
-    public void setTrigger(String trigger) {
+    public void setTrigger(Trigger trigger) {
         this.trigger = trigger;
     }
 

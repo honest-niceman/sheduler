@@ -24,7 +24,7 @@ public class Parser {
     public ArrayList<ScheduleItem> getAllScheduleItemsForWeek(Document doc, String url, UserSettings userSettings) throws IOException {
         ArrayList<ScheduleItem> itemList = new ArrayList<>();
 
-        doc = Jsoup.connect(url).userAgent("Mozilla").get();
+        doc = Jsoup.connect(url).header("Connection", "close").userAgent("Mozilla").get();
 
         Elements scheduleItems = null;
 
@@ -101,26 +101,32 @@ public class Parser {
 
     public ArrayList<ScheduleItem> getScheduledItemsForClassNumber(ArrayList<Node> nodes, ArrayList<Node> dates, int classNumber, UserSettings userSettings) {
         ArrayList<ScheduleItem> scheduleItems = new ArrayList<>();
+        String dateStart = "";
+        String dateEnd = "";
+        String title = "";
+        String teacherName = "";
+        String classTypeLoc = "";
+
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes.get(i).childNodes().size() == 1) {
                 if (nodes.get(i).childNodes().get(0).childNodes().size() > 1) {
                     if(nodes.get(i).childNodes().get(0).childNodes().toString().contains("Подгруппы:")){
                         if (userSettings.getSubGroup().equals(getSubGroup(nodes.get(i).childNodes().get(0).childNodes().toString()))) {
-                            String dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + "T" + getClassStartTime(classNumber);
-                            String dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + "T" + getClassEndTime(classNumber);
-                            String title = getTitle(nodes.get(i).childNodes().get(0).childNodes().get(0).toString());
-                            String teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(0).childNodes().get(2).toString());
-                            String classTypeLoc = getClassType(nodes.get(i).childNodes().get(0).childNodes().get(0).toString()) +
+                            dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + getClassStartTime(classNumber);
+                            dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + getClassEndTime(classNumber);
+                            title = getTitle(nodes.get(i).childNodes().get(0).childNodes().get(0).toString());
+                            teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(0).childNodes().get(2).toString());
+                            classTypeLoc = getClassType(nodes.get(i).childNodes().get(0).childNodes().get(0).toString()) +
                                     " " + getLocation(nodes.get(i).childNodes().get(0).childNodes().get(1).toString());
 
                             fillArray(scheduleItems, userSettings, dateStart, dateEnd, title, teacherName, classTypeLoc);
                         }
                     } else {
-                        String dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + "T" + getClassStartTime(classNumber);
-                        String dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + "T" + getClassEndTime(classNumber);
-                        String title = getTitle(nodes.get(i).childNodes().get(0).childNodes().get(0).toString());
-                        String teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(0).childNodes().get(2).toString());
-                        String classTypeLoc = getClassType(nodes.get(i).childNodes().get(0).childNodes().get(0).toString()) +
+                        dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + getClassStartTime(classNumber);
+                        dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + getClassEndTime(classNumber);
+                        title = getTitle(nodes.get(i).childNodes().get(0).childNodes().get(0).toString());
+                        teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(0).childNodes().get(2).toString());
+                        classTypeLoc = getClassType(nodes.get(i).childNodes().get(0).childNodes().get(0).toString()) +
                                 " " + getLocation(nodes.get(i).childNodes().get(0).childNodes().get(1).toString());
 
                         fillArray(scheduleItems, userSettings, dateStart, dateEnd, title, teacherName, classTypeLoc);
@@ -131,11 +137,11 @@ public class Parser {
                 //первая половина ячейки
                 if (nodes.get(i).childNodes().get(0).childNodes().size() > 1) {
                     if (userSettings.getSubGroup().equals(getSubGroup(nodes.get(i).childNodes().get(0).childNodes().toString()))) {
-                        String dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + "T" + getClassStartTime(classNumber);
-                        String dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + "T" + getClassEndTime(classNumber);
-                        String title = getTitle(nodes.get(i).childNodes().get(0).childNodes().get(0).toString());
-                        String teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(0).childNodes().get(2).toString());
-                        String classTypeLoc = getClassType(nodes.get(i).childNodes().get(0).childNodes().get(0).toString()) +
+                        dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + getClassStartTime(classNumber);
+                        dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + getClassEndTime(classNumber);
+                        title = getTitle(nodes.get(i).childNodes().get(0).childNodes().get(0).toString());
+                        teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(0).childNodes().get(2).toString());
+                        classTypeLoc = getClassType(nodes.get(i).childNodes().get(0).childNodes().get(0).toString()) +
                                 " " + getLocation(nodes.get(i).childNodes().get(0).childNodes().get(1).toString());
 
                         fillArray(scheduleItems, userSettings, dateStart, dateEnd, title, teacherName, classTypeLoc);
@@ -145,11 +151,11 @@ public class Parser {
                 //вторая половина ячейки
                 if (nodes.get(i).childNodes().get(1).childNodes().size() > 1) {
                     if (userSettings.getSubGroup().equals(getSubGroup(nodes.get(i).childNodes().get(1).childNodes().toString()))) {
-                        String dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + "T" + getClassStartTime(classNumber);
-                        String dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + "T" + getClassEndTime(classNumber);
-                        String title = getTitle(nodes.get(i).childNodes().get(0).childNodes().get(0).toString());
-                        String teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(0).childNodes().get(2).toString());
-                        String classTypeLoc = getClassType(nodes.get(i).childNodes().get(0).childNodes().get(0).toString()) +
+                        dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + getClassStartTime(classNumber);
+                        dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + getClassEndTime(classNumber);
+                        title = getTitle(nodes.get(i).childNodes().get(0).childNodes().get(0).toString());
+                        teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(0).childNodes().get(2).toString());
+                        classTypeLoc = getClassType(nodes.get(i).childNodes().get(0).childNodes().get(0).toString()) +
                                 " " + getLocation(nodes.get(i).childNodes().get(0).childNodes().get(1).toString());
 
                         fillArray(scheduleItems, userSettings, dateStart, dateEnd, title, teacherName, classTypeLoc);
@@ -163,15 +169,10 @@ public class Parser {
     private void fillArray(ArrayList<ScheduleItem> scheduleItems, UserSettings userSettings, String dateStart, String dateEnd, String title, String teacherName, String classTypeLoc) {
         String dtstamp = "DTSTAMP:20210914T131208Z";
         String uid = "UID:20210914T131208Z-487081606@marudot.com";
-        String dtstart = "DTSTART;TZID=Europe/Samara:" + dateStart;
-        String dtend = "DTEND;TZID=Europe/Samara:" + dateEnd;
-        String summary = "SUMMARY:" + title;
-        String url = "URL;VALUE=URI:" + "https://vk.com/honest_niceman";
-        String description = "DESCRIPTION:" + teacherName;
-        String location = "LOCATION:" + classTypeLoc;
-        String transparency = "TRANSP:" + userSettings.getTransparency();
+        String url = "https://vk.com/honest_niceman";
+        String transparency = userSettings.getTransparency();
 
-        scheduleItems.add(new ScheduleItem(dtstamp, uid, dtstart, dtend, transparency, summary, url, description, location));
+        scheduleItems.add(new ScheduleItem(dtstamp, uid, dateStart, dateEnd, transparency, title, url, teacherName, classTypeLoc));
     }
 
     public String getTitle(String s) {
