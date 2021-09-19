@@ -15,6 +15,7 @@ public class Parser {
         ArrayList<ScheduleItem> itemList = new ArrayList<>();
 
         for (int i = 1; i < 19; i++) {
+            System.out.println("Week №" + i + " parsing successfully started ");
             itemList.addAll(getAllScheduleItemsForWeek(doc, url + i, userSettings));
         }
 
