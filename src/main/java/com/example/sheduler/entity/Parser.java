@@ -102,69 +102,52 @@ public class Parser {
 
     public ArrayList<ScheduleItem> getScheduledItemsForClassNumber(ArrayList<Node> nodes, ArrayList<Node> dates, int classNumber, UserSettings userSettings) {
         ArrayList<ScheduleItem> scheduleItems = new ArrayList<>();
-        String dateStart = "";
-        String dateEnd = "";
-        String title = "";
-        String teacherName = "";
-        String classTypeLoc = "";
 
         for (int i = 0; i < nodes.size(); i++) {
+            //проверка что ячейка содержит только название одной пары
             if (nodes.get(i).childNodes().size() == 1) {
+                // Проверка что ячейка не пустая и в ней есть пара
                 if (nodes.get(i).childNodes().get(0).childNodes().size() > 1) {
-                    if(nodes.get(i).childNodes().get(0).childNodes().toString().contains("Подгруппы:")){
-                        if (userSettings.getSubGroup().equals(getSubGroup(nodes.get(i).childNodes().get(0).childNodes().toString()))) {
-                            dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + getClassStartTime(classNumber);
-                            dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + getClassEndTime(classNumber);
-                            title = getTitle(nodes.get(i).childNodes().get(0).childNodes().get(0).toString());
-                            teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(0).childNodes().get(2).toString());
-                            classTypeLoc = getClassType(nodes.get(i).childNodes().get(0).childNodes().get(0).toString()) +
-                                    " " + getLocation(nodes.get(i).childNodes().get(0).childNodes().get(1).toString());
-
-                            fillArray(scheduleItems, userSettings, dateStart, dateEnd, title, teacherName, classTypeLoc);
+                    //если эта пара только для одной подгруппы
+                    if (nodes.get(i).childNodes().get(0).childNodes().toString().contains("Подгруппы:")) {
+                        if (getSubGroup(nodes.get(i).childNodes().get(0).childNodes().toString()).equals(userSettings.getSubGroup())) {
+                            parallelClasses(nodes, dates, classNumber, userSettings, scheduleItems, i, 0);
                         }
                     } else {
-                        dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + getClassStartTime(classNumber);
-                        dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + getClassEndTime(classNumber);
-                        title = getTitle(nodes.get(i).childNodes().get(0).childNodes().get(0).toString());
-                        teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(0).childNodes().get(2).toString());
-                        classTypeLoc = getClassType(nodes.get(i).childNodes().get(0).childNodes().get(0).toString()) +
-                                " " + getLocation(nodes.get(i).childNodes().get(0).childNodes().get(1).toString());
-
-                        fillArray(scheduleItems, userSettings, dateStart, dateEnd, title, teacherName, classTypeLoc);
+                        parallelClasses(nodes, dates, classNumber, userSettings, scheduleItems, i, 0);
                     }
                 }
             }
-            if (nodes.get(i).childNodes().size() == 2) {
-                //первая половина ячейки
-                if (nodes.get(i).childNodes().get(0).childNodes().size() > 1) {
-                    if (userSettings.getSubGroup().equals(getSubGroup(nodes.get(i).childNodes().get(0).childNodes().toString()))) {
-                        dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + getClassStartTime(classNumber);
-                        dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + getClassEndTime(classNumber);
-                        title = getTitle(nodes.get(i).childNodes().get(0).childNodes().get(0).toString());
-                        teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(0).childNodes().get(2).toString());
-                        classTypeLoc = getClassType(nodes.get(i).childNodes().get(0).childNodes().get(0).toString()) +
-                                " " + getLocation(nodes.get(i).childNodes().get(0).childNodes().get(1).toString());
-
-                        fillArray(scheduleItems, userSettings, dateStart, dateEnd, title, teacherName, classTypeLoc);
-                    }
+            //если же содержится в одной ячейке две пары
+            else if (nodes.get(i).childNodes().size() == 2) {
+                //первая пара в ячейке
+                if (nodes.get(i).childNodes().get(0).childNodes().size() > 1 && getSubGroup(nodes.get(i).childNodes().get(0).childNodes().toString()).equals(userSettings.getSubGroup())) {
+                    parallelClasses(nodes, dates, classNumber, userSettings, scheduleItems, i, 0);
                 }
-
                 //вторая половина ячейки
-                if (nodes.get(i).childNodes().get(1).childNodes().size() > 1) {
-                    if (userSettings.getSubGroup().equals(getSubGroup(nodes.get(i).childNodes().get(1).childNodes().toString()))) {
-                        dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + getClassStartTime(classNumber);
-                        dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + getClassEndTime(classNumber);
-                        title = getTitle(nodes.get(i).childNodes().get(0).childNodes().get(0).toString());
-                        teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(0).childNodes().get(2).toString());
-                        classTypeLoc = getClassType(nodes.get(i).childNodes().get(0).childNodes().get(0).toString()) +
-                                " " + getLocation(nodes.get(i).childNodes().get(0).childNodes().get(1).toString());
-
-                        fillArray(scheduleItems, userSettings, dateStart, dateEnd, title, teacherName, classTypeLoc);
-                    }
+                else if (nodes.get(i).childNodes().get(1).childNodes().size() > 1 && getSubGroup(nodes.get(i).childNodes().get(1).childNodes().toString()).equals(userSettings.getSubGroup())) {
+                    parallelClasses(nodes, dates, classNumber, userSettings, scheduleItems, i, 1);
                 }
             }
         }
         return scheduleItems;
+    }
+
+    private void parallelClasses(ArrayList<Node> nodes, ArrayList<Node> dates, int classNumber, UserSettings userSettings, ArrayList<ScheduleItem> scheduleItems, int i, int cellNumber) {
+        String dateStart;
+        String dateEnd;
+        String title;
+        String teacherName;
+        String classTypeLoc;
+
+        dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + getClassStartTime(classNumber);
+        dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + getClassEndTime(classNumber);
+        title = getTitle(nodes.get(i).childNodes().get(cellNumber).childNodes().get(0).toString());
+        teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(cellNumber).childNodes().get(2).toString());
+        classTypeLoc = getClassType(nodes.get(i).childNodes().get(cellNumber).childNodes().get(0).toString()) +
+                " " + getLocation(nodes.get(i).childNodes().get(cellNumber).childNodes().get(1).toString());
+
+        fillArray(scheduleItems, userSettings, dateStart, dateEnd, title, teacherName, classTypeLoc);
     }
 
     private void fillArray(ArrayList<ScheduleItem> scheduleItems, UserSettings userSettings, String dateStart, String dateEnd, String title, String teacherName, String classTypeLoc) {
