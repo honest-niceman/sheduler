@@ -1,5 +1,7 @@
-package com.example.sheduler.entity;
+package com.example.sheduler.business;
 
+import com.example.sheduler.entity.ScheduleItem;
+import com.example.sheduler.entity.UserSettings;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
@@ -9,7 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Parser {
+public class WebParser {
 
     public ArrayList<ScheduleItem> getAllScheduleItemsForGroup(Document doc, String url, UserSettings userSettings) throws IOException {
         ArrayList<ScheduleItem> itemList = new ArrayList<>();
@@ -39,7 +41,7 @@ public class Parser {
             dates.add(elements.get(i + 1));
         }
 
-        Parser parser = new Parser();
+        WebParser parser = new WebParser();
         //get first classes (start at 8:00 end at 9:35)
         ArrayList<Node> currentNodes = new ArrayList<>();
         for (int i = 8; i < 14; i++) {
@@ -105,52 +107,64 @@ public class Parser {
 
         for (int i = 0; i < nodes.size(); i++) {
             //проверка что ячейка содержит только название одной пары
-            if (nodes.get(i).childNodes().size() == 1) {
+            List<Node> cells = nodes.get(i).childNodes();
+            if (cells.size() == 1) {
                 // Проверка что ячейка не пустая и в ней есть пара
-                if (nodes.get(i).childNodes().get(0).childNodes().size() > 1) {
+                List<Node> childs = cells.get(0).childNodes();
+                if (childs.size() > 1) {
                     //если эта пара только для одной подгруппы
-                    if (nodes.get(i).childNodes().get(0).childNodes().toString().contains("Подгруппы:")) {
-                        if (getSubGroup(nodes.get(i).childNodes().get(0).childNodes().toString()).equals(userSettings.getSubGroup())) {
-                            parallelClasses(nodes, dates, classNumber, userSettings, scheduleItems, i, 0);
+                    if (childs.toString().contains("Подгруппы:")) {
+                        //то проверяем нужна ли нам эта пара
+                        if (getSubGroup(childs.toString()).equals(userSettings.getSubGroup())) {
+                            getClassInfo(nodes, dates, classNumber, userSettings, scheduleItems, i, 0);
                         }
-                    } else {
-                        parallelClasses(nodes, dates, classNumber, userSettings, scheduleItems, i, 0);
+                    }
+                    // иначе сразу записываем, тк пара общая
+                    else {
+                        getClassInfo(nodes, dates, classNumber, userSettings, scheduleItems, i, 0);
                     }
                 }
             }
             //если же содержится в одной ячейке две пары
-            else if (nodes.get(i).childNodes().size() == 2) {
+            else if (cells.size() == 2) {
                 //первая пара в ячейке
-                if (nodes.get(i).childNodes().get(0).childNodes().size() > 1 && getSubGroup(nodes.get(i).childNodes().get(0).childNodes().toString()).equals(userSettings.getSubGroup())) {
-                    parallelClasses(nodes, dates, classNumber, userSettings, scheduleItems, i, 0);
+                if (cells.get(0).childNodes().size() > 1 &&
+                        getSubGroup(cells.get(0).childNodes().toString()).equals(userSettings.getSubGroup())) {
+
+                    getClassInfo(nodes, dates, classNumber, userSettings, scheduleItems, i, 0);
+
                 }
                 //вторая половина ячейки
-                else if (nodes.get(i).childNodes().get(1).childNodes().size() > 1 && getSubGroup(nodes.get(i).childNodes().get(1).childNodes().toString()).equals(userSettings.getSubGroup())) {
-                    parallelClasses(nodes, dates, classNumber, userSettings, scheduleItems, i, 1);
+                else if (cells.get(1).childNodes().size() > 1 &&
+                        getSubGroup(cells.get(1).childNodes().toString()).equals(userSettings.getSubGroup())) {
+
+                    getClassInfo(nodes, dates, classNumber, userSettings, scheduleItems, i, 1);
+
                 }
             }
         }
         return scheduleItems;
     }
 
-    private void parallelClasses(ArrayList<Node> nodes, ArrayList<Node> dates, int classNumber, UserSettings userSettings, ArrayList<ScheduleItem> scheduleItems, int i, int cellNumber) {
+    private void getClassInfo(ArrayList<Node> nodes, ArrayList<Node> dates, int classNumber, UserSettings userSettings, ArrayList<ScheduleItem> scheduleItems, int i, int cellNumber) {
         String dateStart;
         String dateEnd;
         String title;
         String teacherName;
         String classTypeLoc;
+        List<Node> childs = nodes.get(i).childNodes().get(cellNumber).childNodes();
 
         dateStart = getDate(dates.get(i).childNodes().get(1).toString()) + getClassStartTime(classNumber);
         dateEnd = getDate(dates.get(i).childNodes().get(1).toString()) + getClassEndTime(classNumber);
-        title = getTitle(nodes.get(i).childNodes().get(cellNumber).childNodes().get(0).toString());
-        teacherName = "Преподаватель: " + getTeacherName(nodes.get(i).childNodes().get(cellNumber).childNodes().get(2).toString());
-        classTypeLoc = getClassType(nodes.get(i).childNodes().get(cellNumber).childNodes().get(0).toString()) +
-                " " + getLocation(nodes.get(i).childNodes().get(cellNumber).childNodes().get(1).toString());
+        title = getTitle(childs.get(0).toString());
+        teacherName = "Преподаватель: " + getTeacherName(childs.get(2).toString());
+        classTypeLoc = getClassType(childs.get(0).toString()) +
+                " " + getLocation(childs.get(1).toString());
 
-        fillArray(scheduleItems, userSettings, dateStart, dateEnd, title, teacherName, classTypeLoc);
+        addScheduleItem(scheduleItems, userSettings, dateStart, dateEnd, title, teacherName, classTypeLoc);
     }
 
-    private void fillArray(ArrayList<ScheduleItem> scheduleItems, UserSettings userSettings, String dateStart, String dateEnd, String title, String teacherName, String classTypeLoc) {
+    private void addScheduleItem(ArrayList<ScheduleItem> scheduleItems, UserSettings userSettings, String dateStart, String dateEnd, String title, String teacherName, String classTypeLoc) {
         String dtstamp = "DTSTAMP:20210914T131208Z";
         String uid = "UID:20210914T131208Z-487081606@marudot.com";
         String url = "https://vk.com/honest_niceman";

@@ -1,5 +1,7 @@
-package com.example.sheduler.entity;
+package com.example.sheduler.business;
 
+import com.example.sheduler.entity.ScheduleItem;
+import com.example.sheduler.entity.UserSettings;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.CalendarOutputter;
 import net.fortuna.ical4j.model.*;
@@ -17,7 +19,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 public class CalendarCreator {
-    public File createCalendar(List<ScheduleItem> itemList, UserSettings userSettings, long chatId) throws ValidationException, IOException {
+    public File createCalendar(List<ScheduleItem> itemList, UserSettings userSettings, long chatId, String groupNumber) throws ValidationException, IOException {
         System.out.println("CalendarCreator createCalendar start");
         // Устанавливаем часовой пояс
         CalendarBuilder builder = new CalendarBuilder();
@@ -68,7 +70,8 @@ public class CalendarCreator {
 
             reminder = new VAlarm(new Dur(-1000 * 60 * userSettings.getTrigger().getValue()));
             reminder.getProperties().add(Action.DISPLAY);
-            reminder.getProperties().add(new Description(itemList.get(i).getSummary() + " начнется через " + userSettings.getTrigger().getValue() + " минут!"));
+            reminder.getProperties().add(new Description(itemList.get(i).getSummary() + " начнется через "
+                    + userSettings.getTrigger().getValue() + " минут!"));
 
             meeting.getProperties().add(ug.generateUid());
             meeting.getAlarms().add(reminder);
@@ -82,7 +85,7 @@ public class CalendarCreator {
 
         Files.createDirectory(Paths.get(diectoryName));
 
-        File f = new File(diectoryName + "/test.ics");
+        File f = new File(diectoryName + "/" + groupNumber + ".ics");
 
         FileOutputStream fos = new FileOutputStream(f); // create a file output stream around f
         CalendarOutputter out = new CalendarOutputter();

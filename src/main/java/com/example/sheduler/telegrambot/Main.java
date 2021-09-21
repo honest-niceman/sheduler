@@ -1,5 +1,6 @@
 package com.example.sheduler.telegrambot;
 
+import com.example.sheduler.business.StringParser;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -21,6 +22,5 @@ public class Main {
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
-
     }
 }
