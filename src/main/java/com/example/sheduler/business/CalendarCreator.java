@@ -10,9 +10,7 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.*;
 import net.fortuna.ical4j.util.UidGenerator;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.GregorianCalendar;
@@ -68,6 +66,9 @@ public class CalendarCreator {
             end = new DateTime(endDate.getTime());
             meeting = new VEvent(start, end, eventName);
 
+            meeting.getProperties().add(new Description(itemList.get(i).getDescription() + "\n" + itemList.get(i).getUrl()));
+            meeting.getProperties().add(new Location(itemList.get(i).getLocation()));
+
             reminder = new VAlarm(new Dur(-1000 * 60 * userSettings.getTrigger().getValue()));
             reminder.getProperties().add(Action.DISPLAY);
             reminder.getProperties().add(new Description(itemList.get(i).getSummary() + " начнется через "
@@ -81,11 +82,11 @@ public class CalendarCreator {
 
         System.out.println("Before file creation");
 
-        String diectoryName = "C:/Users/vlasovgv/IdeaProjects/sheduler/" + chatId;
+        String directoryName = "C:/Users/vlasovgv/IdeaProjects/sheduler/chats/" + chatId;
 
-        Files.createDirectory(Paths.get(diectoryName));
+        Files.createDirectory(Paths.get(directoryName));
 
-        File f = new File(diectoryName + "/" + groupNumber + ".ics");
+        File f = new File(directoryName + "/" + groupNumber + ".ics");
 
         FileOutputStream fos = new FileOutputStream(f); // create a file output stream around f
         CalendarOutputter out = new CalendarOutputter();

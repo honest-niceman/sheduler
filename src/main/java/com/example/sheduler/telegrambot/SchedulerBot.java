@@ -50,6 +50,7 @@ public class SchedulerBot extends TelegramLongPollingBot {
 
                     System.out.println("Attempt to send file");
                     execute(new SendDocument().setDocument(inputFile).setChatId(chatId));
+
                 }
 
             } catch (TelegramApiException | ValidationException | IOException e) {

@@ -18,8 +18,6 @@ public class Generator {
 
         Document document = null;
 
-        //String url = "https://ssau.ru/rasp?groupId=755933211&selectedWeek=";
-
         WebParser p = new WebParser();
         List<ScheduleItem> itemList = p.getAllScheduleItemsForGroup(document, url, userSettings);
 
